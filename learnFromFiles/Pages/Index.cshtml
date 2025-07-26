@@ -1,0 +1,75 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+
+
+<div class="mb-4">
+    <h4>1. UploadFile asp-validation- and Search SelectFiles/h4>
+    <!-- Aquí abrimos correctamente el form de upload -->
+    <form method="post"
+          enctype="multipart/form-data"
+          asp-page-handler="Upload">
+        <input asp-for="Upload" type="file" accept=".txt" />
+        <button type="submit" class="btn btn-secondary">Subir</button>
+    </form>
+</div>
+<div class="mb-4">
+    <h4>2. Avilable Files</h4>
+    @if (Model.Files.Any())
+    {
+        <ul>
+            @foreach (var file in Model.Files)
+            {
+                <li>@file</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p><em>No hay archivos subidos.</em></p>
+    }
+</div>
+<div class="mb-3">
+    <h4>3. Busca palabra clave en los archivos</h4>
+    <form method="post" asp-page-handler="Search">
+        <input type="text"
+               asp-for="SearchKey"
+               placeholder="Introduce palabra clave..."
+               class="form-control d-inline-block w-auto" />
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+@if (Model.SearchResults.Any())
+{
+    <div class="mt-3">
+        <strong>Coincidencias encontradas:</strong>
+        <ul>
+            @foreach (var kv in Model.SearchResults)
+            {
+                <li>
+                    <strong>@kv.Key</strong>: @kv.Value
+                </li>
+            }
+        </ul>
+    </div>
+}else if (!string.IsNullOrWhiteSpace(Model.SearchKey))
+    {
+        <div class="mt-3 text-warning">
+            No se encontró la clave “@Model.SearchKey” en ningún archivo.
+        </div>
+    }
+</div>
+@if (!string.IsNullOrEmpty(Model.Usuario.Greeting))
+{
+    <div class="alert alert-success mt-3">
+        @Model.Usuario.Greeting
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

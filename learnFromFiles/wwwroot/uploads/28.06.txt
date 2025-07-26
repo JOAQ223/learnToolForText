@@ -1,0 +1,8 @@
+TODO> 
+
+learn openmp 
+do the same for the cluster 
+go to  flohmark 
+
+sapply for 3 jobs wekstudent and 3 jobs normal 
+
