@@ -15,6 +15,7 @@ public class IndexModel : PageModel
     public IFormFile? Upload { get; set; }
     [BindProperty]
    public string SearchKey { get; set; } = "";
+   public string ActualKey { get; private set; } = "";
 
     public IEnumerable<string> Files { get; private set; } = Enumerable.Empty<string>(); //filel ist 
    public IDictionary<string, string> SearchResults { get; private set; } = new Dictionary<string, string>();
@@ -39,10 +40,12 @@ public class IndexModel : PageModel
     }
         public async Task<IActionResult> OnPostUploadAsync()
         {
-        Console.WriteLine($"we are uploading file with {Upload.FileName}");
-            if (Upload != null && Upload.Length > 0)
-            await _fileService.SaveFileAsync(Upload);
 
+        if (Upload != null && Upload.Length > 0)
+        {
+            Console.WriteLine($"we are uploading file with {Upload.FileName}");
+            await _fileService.SaveFileAsync(Upload);
+        }
             // Recargar lista de archivos
             Files = _fileService.GetAllFileNames();
             return RedirectToPage();
@@ -54,7 +57,9 @@ public class IndexModel : PageModel
         if (!string.IsNullOrWhiteSpace(SearchKey))
         {
             SearchResults = _fileService.SearchWithLine(SearchKey);
+            ActualKey = SearchKey ;
         }
+        
         return Page();
     }
 }
