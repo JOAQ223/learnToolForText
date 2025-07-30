@@ -4,18 +4,21 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using UglyToad.PdfPig;
 using DocumentFormat.OpenXml.Packaging;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using DocumentFormat.OpenXml;
 
 namespace learnFromFiles.Services{
     public class FileService
     {
         private readonly string _uploadDir; //upload direcotrpath
 
-
+    public sealed record DownloadPayload(byte[] Content, string ContentType, string DownloadName);
 
         public FileService(IWebHostEnvironment env)
         {
             // Folder  wwwroot/uploads
-            _uploadDir = Path.Combine(env.WebRootPath, "uploads");
+            _uploadDir = System.IO.Path.Combine(env.WebRootPath, "uploads");
             if (!Directory.Exists(_uploadDir))
                 Directory.CreateDirectory(_uploadDir);
         }
@@ -24,7 +27,7 @@ namespace learnFromFiles.Services{
         // make so they also accept pdf and also works with IfromFi
         public async Task SaveFileAsync(IFormFile file)
         {
-            var filePath = Path.Combine(_uploadDir, Path.GetFileName(file.FileName));//make path for file 
+            var filePath = System.IO.Path.Combine(_uploadDir,System.IO.Path.GetFileName(file.FileName));//make path for file 
             using var stream = new FileStream(filePath, FileMode.Create); // create file
             await file.CopyToAsync(stream); // copy strema form file
         }
@@ -32,21 +35,22 @@ namespace learnFromFiles.Services{
         // Lista los nombres de los archivos
         public IEnumerable<string> GetAllFileNames()
             => Directory.EnumerateFiles(_uploadDir)
-                        .Select(Path.GetFileName);
+         .Select(p => System.IO.Path.GetFileName(p));
 
 
-         public IDictionary<string, string> SearchWithLine(string keyword)
+        public IDictionary<string, string> SearchWithLine(string keyword)
         {
             var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-           
+
             foreach (var filePath in Directory.EnumerateFiles(_uploadDir))
             {
                 var text = ExtractTextFromFile(filePath);
                 //var content = File.ReadAllText(filePath);
-                var line = GetLineFromSearch(text, keyword);
-                if (!string.IsNullOrEmpty(line))
+                var ocurrencesLines = GetLineFromSearch(text, keyword);
+                if (ocurrencesLines.Count>0 && !(ocurrencesLines == null))
                 {
-                    results[Path.GetFileName(filePath)] = line;
+                      results[System.IO.Path.GetFileName(filePath)] =
+                string.Join(Environment.NewLine, ocurrencesLines); // <- join lines
                 }
             }
 
@@ -54,20 +58,20 @@ namespace learnFromFiles.Services{
         }
 
         //using bib pigpdf to seac h i ndiff types of files 
-      private string ExtractTextFromFile(string path)
-        {
+        private string ExtractTextFromFile(string path)
+        { 
             var ext = Path.GetExtension(path).ToLowerInvariant();
             return ext switch
             {
-                ".txt"  => File.ReadAllText(path),
-                ".pdf"  => ExtractTextFromPdf(path),
+                ".txt" => File.ReadAllText(path),
+                ".pdf" => ExtractTextFromPdf(path),
                 ".docx" => ExtractTextFromDocx(path),
                 ".pptx" => ExtractTextFromPptx(path),
                 ".xlsx" => ExtractTextFromXlsx(path),
-                _       => string.Empty
+                _ => string.Empty
             };
         }
-                private string ExtractTextFromPdf(string path)
+        private string ExtractTextFromPdf(string path)
         {
             using var doc = PdfDocument.Open(path);
             return string.Join("\n", doc.GetPages().Select(p => p.Text));
@@ -99,24 +103,59 @@ namespace learnFromFiles.Services{
         }
 
         // gets the line where the word  until  next line comes 
-        private string GetLineFromSearch(string fileContent, string keyword)
+        private List<string> GetLineFromSearch(string fileContent, string keyword)
         {
-            // Separa en líneas (Unix/Mac/Windows)
-            var lines = fileContent
-                .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+            var keyowrdLines = new List<string>();
+            if (string.IsNullOrEmpty(fileContent) || string.IsNullOrEmpty(keyword))
+                return keyowrdLines;
 
-            // Busca la primera línea que contenga la keyword
-            foreach (var line in lines)
+            var unformatLines = fileContent.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+            foreach (var line in unformatLines)
             {
-                if (line
-                    .IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    return line.Trim();
+                    //Console.WriteLine(line.ToString());
+                    keyowrdLines.Add(line.Trim());
+
                 }
             }
-
-            return string.Empty;
+            return keyowrdLines;
         }
+        public DownloadPayload ExportSearchToFile(IDictionary<string,string> d, string fileName)
+    {
+        var csv = ToCsv(d);
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        var safe = EnsureCsv(SafeFileName(fileName));
+        return new DownloadPayload(bytes, "text/csv", safe);
     }
-}
+
+    private static string ToCsv(IDictionary<string,string> d) =>
+        string.Join(Environment.NewLine, d.Select(kv => $"{Csv(kv.Key)},{Csv(kv.Value)}"));
+
+    private static string Csv(string s)
+    {
+        if (s is null) return "";
+        var mustQuote = s.IndexOfAny(new[] {',','"','\n','\r'}) >= 0;
+        return mustQuote ? $"\"{s.Replace("\"","\"\"")}\"" : s;
+    }
+
+    private static string SafeFileName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "export";
+        foreach (var c in System.IO.Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
+        return name.Trim();
+    }
+
+    private static string EnsureCsv(string name) =>
+        name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) ? name : name + ".csv";
+    }
+
+        // use the result to export it to a file to use it for firther learning 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name=""></param>
+        /// <param name="Filename"></param>
+        /// <returns></returns>
+    }
 
