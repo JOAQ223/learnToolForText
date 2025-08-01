@@ -33,13 +33,13 @@
     }
 </div>
 <div class="mb-3">
-    <h4>3. Busca palabra clave en los archivos</h4>
+    <h4>Search  with a keyworld  in Avilable your Files </h4>
     <form method="post" asp-page-handler="Search">
         <input type="text"
                asp-for="SearchKey"
-               placeholder="Introduce palabra clave..."
+               placeholder="Enter word to be search..."
                class="form-control d-inline-block w-auto" />
-        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
 @if (Model.SearchResults.Any())
@@ -79,7 +79,7 @@
                asp-for="FileNameToExport"
                placeholder="FIlename to export"
                class="form-control d-inline-block w-auto" />
-        <button type="submit" class="btn btn-primary">Buscar</button>
+        <button type="submit" class="btn btn-primary">Export with name </button>
     </form>
 </div>
 @section Scripts {
