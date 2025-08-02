@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "j66c9ZUfXHhrNdFITJA7OxTbIq1gJjWJl+lZUsrDdAeapVtDbAo2yEux10H48mQLDliWuweQduo5Wej/DufS4w==",
+  "dgSpecHash": "74pipN9IxuO/q5HxtndAP3DQtP5pk+f9XQm8Bp53CUfoE4A8Awup+MVQHcBoD/wqJAgFrBXwBoM6EAvjZEmtUQ==",
   "success": true,
   "projectFilePath": "/home/drosa/Documents/c#/learnToolForText/learnFromFiles/learnFromFiles.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/drosa/.nuget/packages/documentformat.openxml/3.3.0/documentformat.openxml.3.3.0.nupkg.sha512",
+    "/home/drosa/.nuget/packages/documentformat.openxml.framework/3.3.0/documentformat.openxml.framework.3.3.0.nupkg.sha512",
+    "/home/drosa/.nuget/packages/pdfpig/0.1.11/pdfpig.0.1.11.nupkg.sha512",
+    "/home/drosa/.nuget/packages/system.io.packaging/8.0.1/system.io.packaging.8.0.1.nupkg.sha512"
+  ],
   "logs": []
 }
