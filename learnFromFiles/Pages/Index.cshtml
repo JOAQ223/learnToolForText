@@ -2,7 +2,7 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
-}
+} <-------- THESE IS THE BINDING MODEL form THE PAGE-->
 
 
 
@@ -33,7 +33,7 @@
     }
 </div>
 <div class="mb-3">
-    <h4>Search  with a keyworld  in Avilable your Files </h4>
+    <h4>Search a word  in Avilable your uploaded  Files </h4>
     <form method="post" asp-page-handler="Search">
         <input type="text"
                asp-for="SearchKey"
@@ -45,12 +45,12 @@
 @if (Model.SearchResults.Any())
 {
     <div class="mt-3">
-          <strong>FOund : @Model.SearchKey</strong>
+          <strong>Word Found in following Documents : @Model.SearchKey</strong>
         <ul>
             @foreach (var kv in Model.SearchResults)
             {
                 <li>
-                    <strong>@kv.Key</strong>: @kv.Value
+                    <strong>@kv.Key</strong>  <div>@(kv.Value.Length > 100 ? kv.Value.Substring(0, 100) + "…" : kv.Value)</div>
                 </li>
                     <input type="hidden"
            name="SearchResultTmp[@kv.Key]"
@@ -79,7 +79,7 @@
                asp-for="FileNameToExport"
                placeholder="FIlename to export"
                class="form-control d-inline-block w-auto" />
-        <button type="submit" class="btn btn-primary">Export with name </button>
+        <button type="submit" class="btn btn-primary">Export </button>
     </form>
 </div>
 @section Scripts {

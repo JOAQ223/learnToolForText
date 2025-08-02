@@ -42,8 +42,8 @@ public class IndexModel : PageModel
         if (!string.IsNullOrWhiteSpace(SearchKey))
         {
             SearchResults = _fileService.SearchWithLine(SearchKey);
-            SearchResultTmp = SearchResults;
-        }
+            SearchResultTmp = new Dictionary<string, string>(SearchResults); 
+        }    
 
         return Page();
     }
@@ -54,7 +54,7 @@ public class IndexModel : PageModel
         if (SearchResultTmp == null || SearchResultTmp.Count == 0)
         {
             ModelState.AddModelError(string.Empty, "No hay resultados para exportar.");
-            return Page(); // or show a message
+            return Page(); 
         }
         
         var payload = _fileService.ExportSearchToFile(SearchResultTmp, FileNameToExport);
@@ -77,7 +77,6 @@ public class IndexModel : PageModel
             Console.WriteLine($"we are uploading file with {Upload.FileName}");
             await _fileService.SaveFileAsync(Upload);
         }
-        // Recargar lista de archivos
         Files = _fileService.GetAllFileNames();
         return RedirectToPage();
     }
