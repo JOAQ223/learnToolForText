@@ -71,13 +71,26 @@ public class IndexModel : PageModel
     }
     public async Task<IActionResult> OnPostUploadAsync()
     {
+    if (Upload == null || Upload.Length == 0)
+    {
+        _logger.LogWarning("File is empty or missing.");
+        ModelState.AddModelError(nameof(Upload), "choose a File that is not empty");
+        Files = _fileService.GetAllFileNames(); 
+        return Page(); 
+    }
 
-        if (Upload != null && Upload.Length > 0)
-        {
-            Console.WriteLine($"we are uploading file with {Upload.FileName}");
-            await _fileService.SaveFileAsync(Upload);
-        }
-        Files = _fileService.GetAllFileNames();
+    try
+    {
+        _logger.LogInformation("Uploading file {FileName}", Upload.FileName);
+        await _fileService.SaveFileAsync(Upload);
         return RedirectToPage();
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error saving file {FileName}", Upload?.FileName);
+        ModelState.AddModelError(string.Empty, "Beim Hochladen ist ein Fehler aufgetreten.");
+        Files = _fileService.GetAllFileNames();
+        return Page();
+    }
+}
 }

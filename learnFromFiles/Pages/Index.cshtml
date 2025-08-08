@@ -2,7 +2,7 @@
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
-} <-------- THESE IS THE BINDING MODEL form THE PAGE-->
+} <!------- THESE IS THE BINDING MODEL form THE PAGE-->
 
 
 
@@ -14,6 +14,7 @@
           asp-page-handler="Upload">
         <input asp-for="Upload" type="file" accept=".txt,.docx,.pdf,.pptx,.xlsx" />
         <button type="submit" class="btn btn-secondary">Subir</button>
+         <span asp-validation-for="Upload" class="text-danger"></span>
     </form>
 </div>
 <div class="mb-4">

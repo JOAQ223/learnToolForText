@@ -11,38 +11,39 @@ using DocumentFormat.OpenXml;
 namespace learnFromFiles.Services{
     public class FileService
     {
-        private readonly string _uploadDir; //upload direcotrpath
+        private readonly string _uploadDir;
 
-    public sealed record DownloadPayload(byte[] Content, string ContentType, string DownloadName);
+        public sealed record DownloadPayload(byte[] Content, string ContentType, string DownloadName);
 
         public FileService(IWebHostEnvironment env)
         {
-            // Folder  wwwroot/uploads
             _uploadDir = System.IO.Path.Combine(env.WebRootPath, "uploads");
             if (!Directory.Exists(_uploadDir))
                 Directory.CreateDirectory(_uploadDir);
         }
 
-        // takes some file 
-        // make so they also accept pdf and also works with IfromFi
+        // takes file from  GUI as IFOrmFIle and gets the file stream to copy to a file with the same name  
+        // needs to add to avoid having the same  Name 
+        //
         public async Task SaveFileAsync(IFormFile file)
         {
-            var filePath = System.IO.Path.Combine(_uploadDir,System.IO.Path.GetFileName(file.FileName));//make path for file 
+            var filePath = System.IO.Path.Combine(_uploadDir, System.IO.Path.GetFileName(file.FileName));//make path for file 
             using var stream = new FileStream(filePath, FileMode.Create); // create file
             await file.CopyToAsync(stream); // copy strema form file
         }
 
         // Lista los nombres de los archivos
         public IEnumerable<string> GetAllFileNames()
-            => Directory.EnumerateFiles(_uploadDir)
-         .Select(p => System.IO.Path.GetFileName(p));
+            => Directory.EnumerateFiles(_uploadDir, "*", SearchOption.AllDirectories)
+            //Directory.EnumerateFiles(_uploadDir)
+         .Select(p => System.IO.Path.GetFileName(p));// lambda for every file get the correct filename 
 
 
         public IDictionary<string, string> SearchWithLine(string keyword)
         {
             var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var filePath in Directory.EnumerateFiles(_uploadDir))
+            foreach (var filePath in Directory.EnumerateFiles(_uploadDir, "*", SearchOption.AllDirectories))
             {
                 var text = ExtractTextFromFile(filePath);
                 //var content = File.ReadAllText(filePath);
@@ -141,6 +142,7 @@ namespace learnFromFiles.Services{
 
     private static string SafeFileName(string name)
     {
+            Console.WriteLine($"name in file class to var to export is : {name}");
         if (string.IsNullOrWhiteSpace(name)) return "export";
         foreach (var c in System.IO.Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
         return name.Trim();
